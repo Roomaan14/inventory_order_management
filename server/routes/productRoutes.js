@@ -45,6 +45,31 @@ router.post('/', async (req, res) => {
   }
 });
 
+// PUT /api/products/:id  -> update product
+router.put('/:id', async (req, res) => {
+  try {
+    const { name, price, stock, category } = req.body;
+    if (!name || price == null || stock == null) {
+      return res.status(400).json({ message: 'Name, price and stock are required' });
+    }
+    if (price < 0 || stock < 0) {
+      return res.status(400).json({ message: 'Price and stock must be >= 0' });
+    }
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { name, price, stock, category: category || 'General' },
+      { new: true, runValidators: true }
+    );
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json(product);
+  } catch (err) {
+    console.error('Error updating product:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // DELETE /api/products/:id  -> delete product
 router.delete('/:id', async (req, res) => {
   try {
